@@ -1,0 +1,50 @@
+# These values can be overridden by editing ~/.spamassassin/user_prefs.cf 
+# (see spamassassin(1) for details)
+
+lock_method flock
+bayes_learn_to_journal 0
+
+# These should be safe assumptions and allow for simple visual sifting
+# without risking lost emails.
+
+required_score 4.0
+report_safe 0
+rewrite_header Subject [SPAM] (_SCORE_)
+add_header spam score _SCORE_
+
+allow_user_rules 1
+
+bayes_auto_expire 0
+bayes_ignore_header X-Spam-Flag
+bayes_ignore_header X-Spam-Status
+bayes_ignore_header Received-SPF
+# Uncomment the following lines to enable an aggregate database
+# Or run ansible-playbook --tags="mail/globalize-spamassassin-bayes" bootstrap.yml 
+#bayes_store_module               Mail::SpamAssassin::BayesStore::MySQL
+#bayes_sql_dsn                      DBI:mysql:<DBNAME>:<DBHOST>
+#bayes_sql_username                 <DBUSER>
+#bayes_sql_password                 <DBPASSWORD>
+#bayes_sql_override_username        global
+
+bayes_auto_learn_threshold_spam 5.2
+bayes_auto_learn_threshold_nonspam -0.001
+score BAYES_00 0 0 -0.8 -1.0
+score BAYES_50 0 0 3.5 4.0
+score BAYES_60 0 0 4.5 5.0
+score BAYES_80 0 0 5.0 5.5
+score BAYES_95 0 0 5.5 6.0
+score BAYES_99 0 0 6.0 6.5
+bayes_auto_learn 1
+bayes_auto_learn_on_error 1
+
+use_txrep                  1
+# Uncomment below to use a MySQL database to store global whitelist data
+#txrep_factory Mail::SpamAssassin::SQLBasedAddrList
+#user_awl_dsn DBI:mysql:<DBBNAME>:<DBHOST>
+#user_awl_sql_username <DBUSER>
+#user_awl_sql_password <DBPASSWORD>
+txrep_user2global_ratio 4
+#txrep_whitelist_out       50
+txrep_autolearn            1
+txrep_ipv4_mask_len        16
+

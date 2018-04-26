@@ -114,7 +114,7 @@ Requires: perl(Mail::SPF)
 %if %{require_encode_detect}
 Requires: perl(Encode::Detect)
 %endif
-Requires: procmail
+Requires: maildrop
 Requires: gnupg2
 
 # Hard requirements
@@ -204,15 +204,14 @@ mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/sysconfig
 mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/logrotate.d
 
 install -m 0644 %{SOURCE2} $RPM_BUILD_ROOT%{_sysconfdir}/mail/spamassassin/local.cf
-install -m 0644 %{SOURCE3} $RPM_BUILD_ROOT%{_sysconfdir}/mail/spamassassin/spamc.conf
+install -m 0644 %{SOURCE4} $RPM_BUILD_ROOT%{_sysconfdir}/mail/spamassassin/spamc.conf
 %if %{use_systemd}
 install -m644 %{SOURCE5} $RPM_BUILD_ROOT%{_sysconfdir}/sysconfig/spamassassin
 %else
 install -m644 %{SOURCE15} $RPM_BUILD_ROOT%{_sysconfdir}/sysconfig/spamassassin
 %endif
 
-install -m 0644 %{SOURCE3} %buildroot/etc/mail/spamassassin
-install -m 0644 %{SOURCE4} %buildroot/etc/mail/spamassassin/maildroprc.rc
+install -m 0644 %{SOURCE3} %buildroot/etc/mail/spamassassin/maildroprc.rc
 # installed mode 755 as it's executed by users. 
 install -m 0755 %{SOURCE10} %buildroot/etc/mail/spamassassin
 install -m 0644 %{SOURCE6} %buildroot/etc/logrotate.d/sa-update
