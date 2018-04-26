@@ -1,33 +1,12 @@
-# OVERRIDE RHEL VERSION HERE, RHEL BUILDSYSTEM DOESN'T HAVE DIST TAG
-#%%define rhel 4
-
-# Define Variables that must exist
-%{?!rhel:%define rhel 1}
-%{?!fedora:%define fedora 0}
-
-# Map RHEL to Fedora version
-%if 0%{?rhel} == 4
-%define fedora 3
-%define dist .el4
-%endif
-%if 0%{?rhel} == 5
-%define fedora 6
-%define dist .el5
-%endif
-%if 0%{?rhel} == 6
-%define fedora 12
-%define dist .el6
-%endif
-%if 0%{?rhel} == 7
+# rhel7 compatibility
 %define fedora 16
-%endif
 
 # Define variables to use in conditionals
 %define option_ssl 0
 %define perl_devel 0
-%define dkim_deps  0
+%define dkim_deps  1
 %define require_encode_detect 0
-%define use_systemd 0
+%define use_systemd 1
 
 # SSL and IPv6 (FC6+, RHEL5+)
 %if 0%{?fedora} > 5
@@ -57,12 +36,9 @@
 %{!?perl_vendorlib: %define perl_vendorlib %(eval "`%{__perl} -V:installvendorlib`"; echo $installvendorlib)}
 
 %global saversion 3.004001
-#%global prerev rc2
-
 Summary: Spam filter for email which can be invoked from mail delivery agents
 Name: spamassassin
 Version: 3.4.1
-#Release: 0.8.%{prerev}%{?dist}
 Release: 17%{?dist}
 License: ASL 2.0
 Group: Applications/Internet
@@ -71,7 +47,7 @@ Source0: http://www.apache.org/dist/%{name}/source/%{real_name}-%{version}.tar.b
 #Source0: %{real_name}-%{version}-%{prerev}.tar.bz2
 Source1: http://www.apache.org/dist/%{name}/source/%{real_name}-rules-%{version}.r1675274.tgz
 #Source1: %{real_name}-rules-%{version}.%{prerev}.tgz
-Source2: redhat_local.cf
+Source2: apnscp_local.cf
 Source3: spamassassin-default.rc
 Source4: spamassassin-spamc.rc
 Source5: spamassassin.sysconfig
@@ -89,6 +65,9 @@ Source14: spamassassin.service
 Source15: spamassassin.sysconfig.el
 Source16: sa-update.service
 Source17: sa-update.timer
+Source18: sa-apnscp.patch
+Source20: sa-auto-learn.cron
+
 
 # Patches 0-99 are RH specific
 # https://bugzilla.redhat.com/show_bug.cgi?id=1055593
@@ -107,17 +86,15 @@ Patch103: spamassassin-3.4.1-dns-warnings.patch
 # https://svn.apache.org/viewvc/spamassassin/trunk/lib/Mail/SpamAssassin/PerMsgStatus.pm?r1=1791010&r2=1791009&pathrev=1791010&view=patch
 Patch104: spamassassin-3.4.1-salearn.patch
 Patch199: sa-apnscp.patch
+Patch200: spamc-getopt.patch
 
 # end of patches
 Requires: perl(:MODULE_COMPAT_%(eval "`%{__perl} -V:version`"; echo $version))
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 Requires: /sbin/chkconfig /sbin/service
 Requires(post): diffutils
-%if 0%{?fedora}
-BuildRequires: perl-interpreter >= 2:5.8.0
-%else
 BuildRequires: perl >= 2:5.8.0
-%endif 
+
 BuildRequires: perl-generators
 BuildRequires: perl(Net::DNS)
 BuildRequires: perl(Time::HiRes)
@@ -199,6 +176,7 @@ To filter spam for all users, add that line to /etc/procmailrc
 %patch103 -p1
 %patch104 -p1
 %patch199 -p1
+%patch200 -p1
 # end of patches
 
 echo "RHEL=%{rhel} FEDORA=%{fedora}"
@@ -211,9 +189,9 @@ export CFLAGS="$RPM_OPT_FLAGS"
 %install
 rm -rf $RPM_BUILD_ROOT
 %makeinstall PREFIX=%buildroot/%{prefix} \
-        INSTALLMAN1DIR=%buildroot/%{_mandir}/man1 \
-        INSTALLMAN3DIR=%buildroot/%{_mandir}/man3 \
-        LOCAL_RULES_DIR=%{buildroot}/etc/mail/spamassassin
+		INSTALLMAN1DIR=%buildroot/%{_mandir}/man1 \
+		INSTALLMAN3DIR=%buildroot/%{_mandir}/man3 \
+		LOCAL_RULES_DIR=%{buildroot}/etc/mail/spamassassin
 chmod 755 %buildroot/%{_bindir}/* # allow stripping
 
 %if %{use_systemd} == 0
@@ -224,7 +202,9 @@ install -m 0755 spamd/redhat-rc-script.sh %buildroot/%{_initrddir}/spamassassin
 mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/mail/spamassassin
 mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/sysconfig
 mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/logrotate.d
+
 install -m 0644 %{SOURCE2} $RPM_BUILD_ROOT%{_sysconfdir}/mail/spamassassin/local.cf
+install -m 0644 %{SOURCE3} $RPM_BUILD_ROOT%{_sysconfdir}/mail/spamassassin/spamc.conf
 %if %{use_systemd}
 install -m644 %{SOURCE5} $RPM_BUILD_ROOT%{_sysconfdir}/sysconfig/spamassassin
 %else
@@ -232,7 +212,7 @@ install -m644 %{SOURCE15} $RPM_BUILD_ROOT%{_sysconfdir}/sysconfig/spamassassin
 %endif
 
 install -m 0644 %{SOURCE3} %buildroot/etc/mail/spamassassin
-install -m 0644 %{SOURCE4} %buildroot/etc/mail/spamassassin
+install -m 0644 %{SOURCE4} %buildroot/etc/mail/spamassassin/maildroprc.rc
 # installed mode 755 as it's executed by users. 
 install -m 0755 %{SOURCE10} %buildroot/etc/mail/spamassassin
 install -m 0644 %{SOURCE6} %buildroot/etc/logrotate.d/sa-update
@@ -242,6 +222,9 @@ install -m 0644 %{SOURCE6} %buildroot/etc/logrotate.d/sa-update
 mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/cron.d
 install -m 0644 %{SOURCE7} %buildroot/etc/cron.d/sa-update
 %endif
+mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/cron.daily/
+install -m 0755 %{SOURCE20} %buildroot%{_sysconfdir}/cron.daily/sa-auto-learn.sh
+
 install -m 0644 %{SOURCE9} %buildroot%{_sysconfdir}/sysconfig/sa-update
 # installed mode 744 as non root users can't run it, but can read it.
 install -m 0744 %{SOURCE8} %buildroot%{_datadir}/spamassassin/sa-update.cron
@@ -266,15 +249,15 @@ sed -i -e 's|score DNS_FROM_AHBL_RHSBL 0 2.438 0 2.699 # n=0 n=2||' 50_scores.cf
 cd -
 
 find $RPM_BUILD_ROOT/usr -type f -print |
-        sed "s@^$RPM_BUILD_ROOT@@g" |
-        grep -v perllocal.pod |
-        grep -v "\.packlist" > %{name}-%{version}-filelist
+		sed "s@^$RPM_BUILD_ROOT@@g" |
+		grep -v perllocal.pod |
+		grep -v "\.packlist" > %{name}-%{version}-filelist
 if [ "$(cat %{name}-%{version}-filelist)X" = "X" ] ; then
-    echo "ERROR: EMPTY FILE LIST"
-    exit -1
+	echo "ERROR: EMPTY FILE LIST"
+	exit -1
 fi
 find $RPM_BUILD_ROOT%{perl_vendorlib}/* -type d -print |
-        sed "s@^$RPM_BUILD_ROOT@%dir @g" >> %{name}-%{version}-filelist
+		sed "s@^$RPM_BUILD_ROOT@%dir @g" >> %{name}-%{version}-filelist
 
 mkdir -p $RPM_BUILD_ROOT%{_localstatedir}/lib/spamassassin
 
@@ -295,6 +278,7 @@ install -m 0644 %{SOURCE13} $RPM_BUILD_DIR/Mail-SpamAssassin-%{version}/
 %{_initrddir}/spamassassin
 %{_sysconfdir}/cron.d/sa-update
 %endif
+%{_sysconfdir}/cron.daily/sa-auto-learn.sh
 %dir %{_sysconfdir}/mail
 %config(noreplace) %{_sysconfdir}/mail/spamassassin
 %config(noreplace) %{_sysconfdir}/sysconfig/spamassassin
@@ -332,16 +316,16 @@ cmp /etc/sysconfig/spamassassin $TMPFILE || cp $TMPFILE /etc/sysconfig/spamassas
 rm $TMPFILE
 
 if [ -f /etc/spamassassin.cf ]; then
-        %{__mv} /etc/spamassassin.cf /etc/mail/spamassassin/migrated.cf
+	%{__mv} /etc/spamassassin.cf /etc/mail/spamassassin/migrated.cf
 fi
 if [ -f /etc/mail/spamassassin.cf ]; then
-        %{__mv} /etc/mail/spamassassin.cf /etc/mail/spamassassin/migrated.cf
+	%{__mv} /etc/mail/spamassassin.cf /etc/mail/spamassassin/migrated.cf
 fi
 
 %postun
 %if %{use_systemd} == 0
 if [ "$1" -ge "1" ]; then
-    /sbin/service spamassassin condrestart > /dev/null 2>&1
+	/sbin/service spamassassin condrestart > /dev/null 2>&1
 fi
 exit 0
 %endif
@@ -354,8 +338,8 @@ exit 0
 %preun
 %if %{use_systemd} == 0
 if [ $1 = 0 ] ; then
-    /sbin/service spamassassin stop >/dev/null 2>&1
-    /sbin/chkconfig --del spamassassin
+	/sbin/service spamassassin stop >/dev/null 2>&1
+	/sbin/chkconfig --del spamassassin
 fi
 exit 0
 %endif
@@ -375,6 +359,10 @@ exit 0
 %endif
 
 %changelog
+* Thu Apr 26 2018 Matt Saladna <matt@apisnetworks.com> - 3.4.1-18
+- apnscp release
+- Compile ruleset after sa-update
+
 * Mon Oct 23 2017 Kevin Fenzi <kevin@scrye.com> - 3.4.1-17
 - Add upstream patch to stop sa-learn warnings. Fixes bug #1505317
 - Add upstream patch to stop DNS warnings. Fixes bug #1364932
@@ -618,8 +606,8 @@ exit 0
 - Enable SOUGHT ruleset in nightly sa-update http://wiki.apache.org/spamassassin/SoughtRules
   You must enable the sa-update cron job manually in /etc/cron.d/sa-update
 - Custom channels may be specified in these config files:
-      /etc/mail/spamassassin/sa-update-channels.txt
-      /etc/mail/spamassassin/sa-update-keys.txt
+	  /etc/mail/spamassassin/sa-update-channels.txt
+	  /etc/mail/spamassassin/sa-update-keys.txt
 
 * Thu Sep 17 2009 Warren Togami <wtogami@redhat.com> - 3.3.3-0.14.svn816416
 - 3.3.0 svn816416 snapshot, pre-alpha3
@@ -729,8 +717,8 @@ exit 0
 
 * Thu Jan 18 2007 Warren Togami <wtogami@redhat.com> 
 - Options for RHEL4
-    * spamc/spamd cannot connect over IPv6 or SSL
-    * sa-update is disabled
+	* spamc/spamd cannot connect over IPv6 or SSL
+	* sa-update is disabled
   The above functionality requires perl modules not included in RHEL4.
   You may still use them if you get those perl modules from elsewhere.
   RHEL5 ships these perl modules.
