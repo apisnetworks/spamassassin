@@ -1,5 +1,8 @@
 # These values can be overridden by editing ~/.spamassassin/user_prefs.cf 
 # (see spamassassin(1) for details)
+loadplugin Mail::SpamAssassin::Plugin::Shortcircuit
+loadplugin Mail::SpamAssassin::Plugin::Rule2XSBody
+loadplugin Mail::SpamAssassin::Plugin::TxRep
 
 lock_method flock
 bayes_learn_to_journal 0

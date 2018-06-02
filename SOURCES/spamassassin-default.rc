@@ -4,7 +4,7 @@
 if ($SIZE < 524288)
 {
         exception {
-                xfilter "/usr/bin/spamc -u $RECIPIENT"
+                xfilter "/usr/bin/spamc -u $LOGNAME"
         }
 }
 
