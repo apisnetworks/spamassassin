@@ -93,7 +93,7 @@ Requires: perl(:MODULE_COMPAT_%(eval "`%{__perl} -V:version`"; echo $version))
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 Requires: /sbin/chkconfig /sbin/service
 Requires(post): diffutils
-Requires(post): perl-ExtUtils-ParseXS
+Requires: perl-ExtUtils-ParseXS >= 1:3.35
 BuildRequires: perl >= 2:5.8.0
 
 BuildRequires: perl-generators
