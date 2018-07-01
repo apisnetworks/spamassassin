@@ -39,7 +39,7 @@
 Summary: Spam filter for email which can be invoked from mail delivery agents
 Name: spamassassin
 Version: 3.4.1
-Release: 17%{?dist}
+Release: 19%{?dist}
 License: ASL 2.0
 Group: Applications/Internet
 URL: http://spamassassin.apache.org/
@@ -360,6 +360,9 @@ exit 0
 %endif
 
 %changelog
+* Wed Jun 20 2018 Matt Saladna <matt@apisnetworks.com> - 3.4.1-19
+- Correct CRLF in sa-learn
+
 * Thu Apr 26 2018 Matt Saladna <matt@apisnetworks.com> - 3.4.1-18
 - apnscp release
 - Compile ruleset after sa-update
