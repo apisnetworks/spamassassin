@@ -39,7 +39,7 @@
 Summary: Spam filter for email which can be invoked from mail delivery agents
 Name: spamassassin
 Version: 3.4.1
-Release: 19%{?dist}
+Release: 20%{?dist}
 License: ASL 2.0
 Group: Applications/Internet
 URL: http://spamassassin.apache.org/
@@ -322,6 +322,8 @@ if [ -f /etc/mail/spamassassin.cf ]; then
 	%{__mv} /etc/mail/spamassassin.cf /etc/mail/spamassassin/migrated.cf
 fi
 sa-compile
+# RPM truncates extraneous newlines... spamc doesn't like that
+sed -i -e '$a\' /etc/mail/spamassassin/spamc.conf
 
 %postun
 %if %{use_systemd} == 0
@@ -360,6 +362,8 @@ exit 0
 %endif
 
 %changelog
+* Mon Jul 02 2018 Matt Saladna <matt@apisnetworks.com> - 3.4.1-20
+- Replace stripped newline termination in spamc.conf
 * Wed Jun 20 2018 Matt Saladna <matt@apisnetworks.com> - 3.4.1-19
 - Correct CRLF in sa-learn
 
