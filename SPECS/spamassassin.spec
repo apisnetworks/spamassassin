@@ -35,17 +35,17 @@
 %define real_name Mail-SpamAssassin
 %{!?perl_vendorlib: %define perl_vendorlib %(eval "`%{__perl} -V:installvendorlib`"; echo $installvendorlib)}
 
-%global saversion 3.004001
+%global saversion 3.004002
 Summary: Spam filter for email which can be invoked from mail delivery agents
 Name: spamassassin
-Version: 3.4.1
-Release: 20%{?dist}
+Version: 3.4.2
+Release: 1%{?dist}
 License: ASL 2.0
 Group: Applications/Internet
 URL: http://spamassassin.apache.org/
 Source0: http://www.apache.org/dist/%{name}/source/%{real_name}-%{version}.tar.bz2
 #Source0: %{real_name}-%{version}-%{prerev}.tar.bz2
-Source1: http://www.apache.org/dist/%{name}/source/%{real_name}-rules-%{version}.r1675274.tgz
+Source1: http://www.apache.org/dist/%{name}/source/%{real_name}-rules-%{version}.r1840640.tgz
 #Source1: %{real_name}-rules-%{version}.%{prerev}.tgz
 Source2: apnscp_local.cf
 Source3: spamassassin-default.rc
@@ -73,20 +73,8 @@ Source20: sa-auto-learn.cron
 # https://bugzilla.redhat.com/show_bug.cgi?id=1055593
 # Switch to using gnupg2 instead of gnupg1
 Patch0: spamassassin-3.3.2-gnupg2.patch
+Patch10: sa-apnscp.patch
 # Patches 100+ are SVN backports (DO NOT REUSE!)
-Patch100: spamassassin-3.4.1-netdns.patch
-# Openssl 1.1.x support
-# https://bz.apache.org/SpamAssassin/show_bug.cgi?id=7361
-Patch101: CRYPTO_malloc.patch
-Patch102: spamassassin-3.4.1-Fix-building-on-Perl-without-dot-in-INC.patch
-# https://bugzilla.redhat.com/show_bug.cgi?id=1364932
-# https://svn.apache.org/viewvc/spamassassin/branches/3.4/lib/Mail/SpamAssassin/Plugin/URIDNSBL.pm?r1=1676616&r2=1694126&pathrev=1694126&view=patch
-Patch103: spamassassin-3.4.1-dns-warnings.patch
-# https://bugzilla.redhat.com/show_bug.cgi?id=1505317
-# https://svn.apache.org/viewvc/spamassassin/trunk/lib/Mail/SpamAssassin/PerMsgStatus.pm?r1=1791010&r2=1791009&pathrev=1791010&view=patch
-Patch104: spamassassin-3.4.1-salearn.patch
-Patch199: sa-apnscp.patch
-Patch200: spamc-getopt.patch
 
 # end of patches
 Requires: perl(:MODULE_COMPAT_%(eval "`%{__perl} -V:version`"; echo $version))
@@ -170,14 +158,7 @@ To filter spam for all users, add that line to /etc/procmailrc
 %setup -q -n Mail-SpamAssassin-%{version}
 # Patches 0-99 are RH specific
 %patch0 -p1
-# Patches 100+ are SVN backports (DO NOT REUSE!)
-%patch100 -p1
-%patch101 -p1
-%patch102 -p1
-%patch103 -p1
-%patch104 -p1
-%patch199 -p1
-%patch200 -p1
+%patch10 -p1
 # end of patches
 
 echo "RHEL=%{rhel} FEDORA=%{fedora}"
@@ -273,6 +254,7 @@ install -m 0644 %{SOURCE13} $RPM_BUILD_DIR/Mail-SpamAssassin-%{version}/
 %defattr(-,root,root)
 %doc LICENSE NOTICE CREDITS Changes README TRADEMARK UPGRADE
 %doc USAGE sample-nonspam.txt sample-spam.txt 
+%doc sql
 %doc README.RHEL.Fedora
 %if %{use_systemd} == 0
 %{_initrddir}/spamassassin
@@ -362,8 +344,13 @@ exit 0
 %endif
 
 %changelog
+* Mon Oct 08 2018 Matt Saladna <matt@apisnetworks.com> - 3.4.2-1
+- Bump SA
+- Shortcircuit BAYES_00/BAYES_99 scores
+
 * Mon Jul 02 2018 Matt Saladna <matt@apisnetworks.com> - 3.4.1-20
 - Replace stripped newline termination in spamc.conf
+
 * Wed Jun 20 2018 Matt Saladna <matt@apisnetworks.com> - 3.4.1-19
 - Correct CRLF in sa-learn
 

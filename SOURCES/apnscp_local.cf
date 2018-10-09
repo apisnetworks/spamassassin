@@ -40,6 +40,9 @@ score BAYES_99 0 0 6.0 6.5
 bayes_auto_learn 1
 bayes_auto_learn_on_error 1
 
+shortcircuit BAYES_99                spam
+shortcircuit BAYES_00                ham
+
 use_txrep                  1
 # Uncomment below to use a MySQL database to store global whitelist data
 #txrep_factory Mail::SpamAssassin::SQLBasedAddrList
