@@ -39,7 +39,7 @@
 Summary: Spam filter for email which can be invoked from mail delivery agents
 Name: spamassassin
 Version: 3.4.2
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: ASL 2.0
 Group: Applications/Internet
 URL: http://spamassassin.apache.org/
@@ -65,7 +65,6 @@ Source14: spamassassin.service
 Source15: spamassassin.sysconfig.el
 Source16: sa-update.service
 Source17: sa-update.timer
-Source18: sa-apnscp.patch
 Source20: sa-auto-learn.cron
 
 
@@ -74,6 +73,7 @@ Source20: sa-auto-learn.cron
 # Switch to using gnupg2 instead of gnupg1
 Patch0: spamassassin-3.3.2-gnupg2.patch
 Patch10: sa-apnscp.patch
+Patch11: postfix-srs.patch
 # Patches 100+ are SVN backports (DO NOT REUSE!)
 
 # end of patches
@@ -159,6 +159,7 @@ To filter spam for all users, add that line to /etc/procmailrc
 # Patches 0-99 are RH specific
 %patch0 -p1
 %patch10 -p1
+%patch11 -p1
 # end of patches
 
 echo "RHEL=%{rhel} FEDORA=%{fedora}"
@@ -344,6 +345,9 @@ exit 0
 %endif
 
 %changelog
+* Wed Nov 28 2018 Matt Saladna <matt@apisnetworks.com> - 3.4.2-2
+- Case-insensitive SRS check
+
 * Mon Oct 08 2018 Matt Saladna <matt@apisnetworks.com> - 3.4.2-1
 - Bump SA
 - Shortcircuit BAYES_00/BAYES_99 scores
