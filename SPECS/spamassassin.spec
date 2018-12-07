@@ -39,7 +39,7 @@
 Summary: Spam filter for email which can be invoked from mail delivery agents
 Name: spamassassin
 Version: 3.4.2
-Release: 2%{?dist}
+Release: 3%{?dist}
 License: ASL 2.0
 Group: Applications/Internet
 URL: http://spamassassin.apache.org/
@@ -74,6 +74,7 @@ Source20: sa-auto-learn.cron
 Patch0: spamassassin-3.3.2-gnupg2.patch
 Patch10: sa-apnscp.patch
 Patch11: postfix-srs.patch
+Patch12: spamassassin-3.4.2-utf8-domain.patch
 # Patches 100+ are SVN backports (DO NOT REUSE!)
 
 # end of patches
@@ -160,6 +161,7 @@ To filter spam for all users, add that line to /etc/procmailrc
 %patch0 -p1
 %patch10 -p1
 %patch11 -p1
+%patch12 -p3
 # end of patches
 
 echo "RHEL=%{rhel} FEDORA=%{fedora}"
@@ -345,6 +347,9 @@ exit 0
 %endif
 
 %changelog
+* Thu Dec 06 2018 Matt Saladna <matt@apisnetworks.com> - 3.4.2-3
+- new_dns_packet is spamming system logs #7632
+
 * Wed Nov 28 2018 Matt Saladna <matt@apisnetworks.com> - 3.4.2-2
 - Case-insensitive SRS check
 
@@ -363,7 +368,7 @@ exit 0
 - Compile ruleset after sa-update
 
 * Mon Oct 23 2017 Kevin Fenzi <kevin@scrye.com> - 3.4.1-17
-- Add upstream patch to stop sa-learn warnings. Fixes bug #1505317
+patch to stop sa-learn warnings. Fixes bug #1505317
 - Add upstream patch to stop DNS warnings. Fixes bug #1364932
 
 * Thu Aug 03 2017 Fedora Release Engineering <releng@fedoraproject.org> - 3.4.1-16

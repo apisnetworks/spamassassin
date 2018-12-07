@@ -1,0 +1,11 @@
+--- spamassassin/branches/3.4/lib/Mail/SpamAssassin/DnsResolver.pm  2018/10/12 06:14:11 1843622
++++ spamassassin/branches/3.4/lib/Mail/SpamAssassin/DnsResolver.pm  2018/10/12 06:38:56 1843623
+@@ -547,7 +547,7 @@
+   eval {
+ 
+     if (utf8::is_utf8($domain)) {  # since Perl 5.8.1
+-      info("dns: new_dns_packet: domain is utf8 flagged: %s", $domain);
++      dbg("dns: new_dns_packet: domain is utf8 flagged: %s", $domain);
+     }
+ 
+     $domain =~ s/\.*\z/./s;
