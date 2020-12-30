@@ -35,7 +35,7 @@
 %define real_name Mail-SpamAssassin
 %{!?perl_vendorlib: %define perl_vendorlib %(eval "`%{__perl} -V:installvendorlib`"; echo $installvendorlib)}
 
-%global saversion 3.004002
+%global saversion 3.004004
 Summary: Spam filter for email which can be invoked from mail delivery agents
 Name: spamassassin
 Version: 3.4.4
@@ -65,7 +65,6 @@ Source14: spamassassin.service
 Source15: spamassassin.sysconfig.el
 Source16: sa-update.service
 Source17: sa-update.timer
-Source20: sa-auto-learn.cron
 
 
 # Patches 0-99 are RH specific
@@ -205,7 +204,6 @@ mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/cron.d
 install -m 0644 %{SOURCE7} %buildroot/etc/cron.d/sa-update
 %endif
 mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/cron.daily/
-install -m 0755 %{SOURCE20} %buildroot%{_sysconfdir}/cron.daily/sa-auto-learn.sh
 
 install -m 0644 %{SOURCE9} %buildroot%{_sysconfdir}/sysconfig/sa-update
 # installed mode 744 as non root users can't run it, but can read it.
@@ -261,7 +259,6 @@ install -m 0644 %{SOURCE13} $RPM_BUILD_DIR/Mail-SpamAssassin-%{version}/
 %{_initrddir}/spamassassin
 %{_sysconfdir}/cron.d/sa-update
 %endif
-%{_sysconfdir}/cron.daily/sa-auto-learn.sh
 %dir %{_sysconfdir}/mail
 %config(noreplace) %{_sysconfdir}/mail/spamassassin
 %config(noreplace) %{_sysconfdir}/sysconfig/spamassassin

@@ -1,6 +1,0 @@
-#!/bin/sh
-
-for i in /home/virtual/site*/fst/home/*/Mail/.AutoSpam/cur ; do
-        sa-learn -u global --spam $i/
-        rm -f $i/*
-done
