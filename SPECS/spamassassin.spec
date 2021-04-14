@@ -35,17 +35,17 @@
 %define real_name Mail-SpamAssassin
 %{!?perl_vendorlib: %define perl_vendorlib %(eval "`%{__perl} -V:installvendorlib`"; echo $installvendorlib)}
 
-%global saversion 3.004004
+%global saversion 3.004006
 Summary: Spam filter for email which can be invoked from mail delivery agents
 Name: spamassassin
-Version: 3.4.4
+Version: 3.4.6
 Release: 1%{?dist}
 License: ASL 2.0
 Group: Applications/Internet
 URL: http://spamassassin.apache.org/
 Source0: http://www.apache.org/dist/%{name}/source/%{real_name}-%{version}.tar.bz2
 #Source0: %{real_name}-%{version}-%{prerev}.tar.bz2
-Source1: http://www.apache.org/dist/%{name}/source/%{real_name}-rules-%{version}.r1873061.tgz
+Source1: http://www.apache.org/dist/%{name}/source/%{real_name}-rules-%{version}.r1888502.tgz
 #Source1: %{real_name}-rules-%{version}.%{prerev}.tgz
 Source2: apnscp_local.cf
 Source3: spamassassin-default.rc
@@ -342,6 +342,9 @@ exit 0
 %endif
 
 %changelog
+* Wed Apr 14 2021 Matt Saladna <matt@apisnetworks.com> - 3.4.6-1
+- Version bump
+
 * Thu Dec 06 2018 Matt Saladna <matt@apisnetworks.com> - 3.4.2-3
 - new_dns_packet is spamming system logs #7632
 
