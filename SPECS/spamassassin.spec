@@ -7,6 +7,7 @@
 %define dkim_deps  1
 %define require_encode_detect 0
 %define use_systemd 1
+%define epoch 3
 
 # SSL and IPv6 (FC6+, RHEL5+)
 %if 0%{?fedora} > 5
@@ -39,6 +40,7 @@
 Summary: Spam filter for email which can be invoked from mail delivery agents
 Name: spamassassin
 Version: 3.4.6
+Epoch: %{epoch}
 Release: 1%{?dist}
 License: ASL 2.0
 Group: Applications/Internet
