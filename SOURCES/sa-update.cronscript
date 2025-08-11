@@ -62,17 +62,10 @@ now=`date +"%d-%b-%Y %T"`
 # We want to always write to the log, but only send mail
 # as configured.  
 if [ $status -eq 0 ]; then
-    # Recompile rules
-    rm -f /usr/share/spamassassin/[0-9][0-9]_*
-    RULES=(/var/lib/spamassassin/3.*)
-    MAINRULE=${RULES[(${#RULES[@]})-1]}
-    ln -s $MAINRULE/*/[0-9][0-9]_* /usr/share/spamassassin
-    /usr/bin/sa-compile
-
-    if [ -n "$DEBUG" -o -n "$NOTIFY_UPD" ]; then
+        if [ -n "$DEBUG" -o -n "$NOTIFY_UPD" ]; then
 	    echo "$now: SpamAssassin: Update processed successfully" 
 	else
-        echo "$now: SpamAssassin: Update processed successfully" >>/var/log/sa-update.log
+            echo "$now: SpamAssassin: Update processed successfully" >>/var/log/sa-update.log
 	fi
 	if [ -f /usr/bin/systemctl ]; then
 		systemctl condrestart spamassassin.service >& /dev/null

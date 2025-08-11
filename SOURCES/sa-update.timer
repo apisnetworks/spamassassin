@@ -13,4 +13,4 @@ Documentation=man:sa-update(1)
 OnCalendar=daily
 
 [Install]
-WantedBy=spamassassin.service
+WantedBy=timers.target

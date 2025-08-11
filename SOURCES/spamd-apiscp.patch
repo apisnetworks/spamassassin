@@ -1,0 +1,31 @@
+diff -w -Nur Mail-SpamAssassin-4.0.1.orig/spamd/spamd.raw Mail-SpamAssassin-4.0.1/spamd/spamd.raw
+--- Mail-SpamAssassin-4.0.1.orig/spamd/spamd.raw	2025-08-11 16:17:40.745054465 -0500
++++ Mail-SpamAssassin-4.0.1/spamd/spamd.raw	2025-08-11 16:20:43.851592415 -0500
+@@ -1477,6 +1477,7 @@
+ 
+     # handle $clients_per_child connections, then die in "old" age...
+     my $orders;
++    opendir (my $orig_root, "/");
+     for ( my $i = 0 ; $i < $clients_per_child ; $i++ ) {
+       if ($scaling) {
+         $scaling->update_child_status_idle();
+@@ -1513,6 +1514,8 @@
+           die("spamd: return setuid failed");
+         }
+       }
++      chdir($orig_root);
++      chroot(".");
+ 
+       if ($copy_config_p) {
+         # use a timeout!  There are bugs in Storable on certain platforms
+@@ -2736,6 +2739,10 @@
+     $spamtest->read_scoreonly_config($cf_file);
+   }
+ 
++  if ( -f "/etc/mail/spamassassin/prefs" ) {
++    $spamtest->read_scoreonly_config('/etc/mail/spamassassin/prefs');
++  }
++
+   # signal_user_changed will ignore undef user_dirs, so this is ok
+   $spamtest->signal_user_changed(
+     {
